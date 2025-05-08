@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useState, useEffect } from "react";
-import type { EmblaCarouselType } from "embla-carousel-react";
+import type { UseEmblaCarouselType } from "embla-carousel-react";
 
 const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,7 +51,7 @@ const Hero = () => {
       <Carousel 
         className="w-full" 
         opts={{ loop: true }} 
-        onSelect={(api: EmblaCarouselType) => {
+        onSelect={(api: UseEmblaCarouselType[1]) => {
           setCurrentIndex(api?.selectedScrollSnap() || 0);
         }}
       >
