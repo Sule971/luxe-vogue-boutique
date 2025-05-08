@@ -1,5 +1,6 @@
 
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import Hero from "@/components/home/Hero";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
@@ -11,6 +12,25 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.6 }
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
   return (
     <Layout>
       <Hero />
@@ -18,8 +38,14 @@ const Index = () => {
       <FeaturedCollections collections={collections} />
       
       {/* Newsletter / CTA Section */}
-      <section className="py-20 bg-luxury-purple text-white">
-        <div className="container mx-auto px-4 text-center">
+      <motion.section 
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+        className="py-20 bg-luxury-purple text-white"
+      >
+        <motion.div variants={fadeIn} className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-playfair font-bold mb-4">
             Join Our Exclusive Circle
           </h2>
@@ -32,18 +58,24 @@ const Index = () => {
               placeholder="Your email address" 
               className="w-full px-4 py-3 border-0 rounded-l-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold"
             />
-            <button className="bg-gold hover:bg-gold-light text-gray-900 font-medium px-6 py-3 rounded-r-md transition-colors duration-200">
+            <button className="bg-gold hover:bg-gold-light text-gray-900 font-medium px-6 py-3 rounded-r-md transition-colors duration-200 btn-hover-effect">
               Subscribe
             </button>
           </div>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
       
       {/* Brand Story Section */}
-      <section className="py-20 bg-white">
+      <motion.section 
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+        className="py-20 bg-white"
+      >
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
+            <motion.div variants={fadeIn}>
               <h2 className="text-3xl md:text-4xl font-playfair font-bold mb-6">
                 The Luxe Vogue Experience
               </h2>
@@ -57,8 +89,11 @@ const Index = () => {
                 to make you feel extraordinary. We're dedicated to providing not just products, but a
                 gateway to the lifestyle you aspire to.
               </p>
-            </div>
-            <div className="relative">
+            </motion.div>
+            <motion.div 
+              variants={fadeIn}
+              className="relative"
+            >
               <div className="aspect-square rounded-lg overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1581497396202-5645e76a3a8e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
@@ -73,10 +108,10 @@ const Index = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
     </Layout>
   );
 };
