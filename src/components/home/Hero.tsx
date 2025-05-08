@@ -71,6 +71,8 @@ const Hero = () => {
         className="w-full" 
         opts={{ loop: true }} 
         setApi={setApi}
+        autoPlay={true}
+        autoPlayInterval={7000}
       >
         <CarouselContent>
           {slides.map((slide, index) => (
