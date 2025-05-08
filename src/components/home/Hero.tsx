@@ -9,6 +9,7 @@ import type { UseEmblaCarouselType } from "embla-carousel-react";
 const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
 
   const slides = [
     {
@@ -46,14 +47,30 @@ const Hero = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Update current index when the carousel slides change
+  useEffect(() => {
+    if (!api) return;
+    
+    const onSelect = () => {
+      setCurrentIndex(api.selectedScrollSnap());
+    };
+    
+    api.on('select', onSelect);
+    
+    // Call once to set initial index
+    onSelect();
+    
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api]);
+
   return (
     <div className="relative">
       <Carousel 
         className="w-full" 
         opts={{ loop: true }} 
-        onSelect={(api: UseEmblaCarouselType[1]) => {
-          setCurrentIndex(api?.selectedScrollSnap() || 0);
-        }}
+        setApi={setApi}
       >
         <CarouselContent>
           {slides.map((slide, index) => (
