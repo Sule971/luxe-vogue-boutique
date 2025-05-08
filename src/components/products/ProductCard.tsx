@@ -2,8 +2,9 @@
 import { Link } from "react-router-dom";
 import { Product } from "@/types";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { Button } from "@/components/ui/button";
-import { Heart, ShoppingCart, Plus } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,6 +15,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, featured = false }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { toast } = useToast();
   const [isHovered, setIsHovered] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -30,10 +32,12 @@ const ProductCard = ({ product, featured = false }: ProductCardProps) => {
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
-    toast({
-      title: "Added to wishlist",
-      description: `${product.name} has been added to your wishlist`,
-    });
+    
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
   };
 
   // Fallback images if product image doesn't load
@@ -42,6 +46,8 @@ const ProductCard = ({ product, featured = false }: ProductCardProps) => {
     "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
     "https://images.unsplash.com/photo-1649972904349-6e44c42644a7"
   ];
+
+  const inWishlist = isInWishlist(product.id);
 
   return (
     <Link 
@@ -75,10 +81,15 @@ const ProductCard = ({ product, featured = false }: ProductCardProps) => {
           isHovered ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
         }`}>
           <button 
-            className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors transform hover:scale-110"
+            className={`p-2 rounded-full shadow-md transition-colors transform hover:scale-110 ${
+              inWishlist 
+                ? "bg-luxury-purple text-white hover:bg-luxury-purple-light" 
+                : "bg-white text-gray-600 hover:bg-gray-100"
+            }`}
             onClick={handleWishlist}
+            aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
           >
-            <Heart className="h-5 w-5 text-gray-600" />
+            <Heart className={`h-5 w-5 ${inWishlist ? "fill-current" : ""}`} />
           </button>
         </div>
         <div className={`absolute bottom-0 left-0 right-0 bg-black bg-opacity-20 p-4 transform transition-transform duration-300 ease-out ${

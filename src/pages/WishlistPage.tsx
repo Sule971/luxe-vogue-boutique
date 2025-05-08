@@ -1,35 +1,39 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Heart, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Product } from "@/types";
-import { products } from "@/data/products";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { motion } from "framer-motion";
 
 const WishlistPage = () => {
-  const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { wishlistItems } = useWishlist();
 
   useEffect(() => {
-    // In a real app, this would fetch from an API or localStorage
-    // For demo purposes, we'll just use some random products
-    setTimeout(() => {
-      const randomProducts = products
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 4);
-      setWishlistItems(randomProducts);
-      setIsLoading(false);
-    }, 500);
-
     window.scrollTo(0, 0);
   }, []);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-12">
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="container mx-auto px-4 py-12"
+      >
         <div className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-playfair font-bold mb-4">My Wishlist</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
@@ -37,17 +41,14 @@ const WishlistPage = () => {
           </p>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="animate-pulse flex flex-col items-center">
-              <div className="w-16 h-16 mb-4 rounded-full bg-gray-200"></div>
-              <div className="h-4 w-32 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        ) : wishlistItems.length > 0 ? (
-          <>
+        {wishlistItems.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <ProductGrid products={wishlistItems} />
-          </>
+          </motion.div>
         ) : (
           <Card className="max-w-md mx-auto animate-fade-in">
             <CardHeader className="text-center">
@@ -57,11 +58,21 @@ const WishlistPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center space-y-4">
-              <Heart className="h-16 w-16 text-gray-300" />
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20
+                }}
+              >
+                <Heart className="h-16 w-16 text-gray-300" />
+              </motion.div>
               <p className="text-gray-500 text-center">
                 Items you add to your wishlist will appear here.
               </p>
-              <Link to="/collections">
+              <Link to="/collections-showcase">
                 <Button className="bg-luxury-purple hover:bg-luxury-purple-light btn-hover-effect">
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   Browse Collections
@@ -70,7 +81,7 @@ const WishlistPage = () => {
             </CardContent>
           </Card>
         )}
-      </div>
+      </motion.div>
     </Layout>
   );
 };

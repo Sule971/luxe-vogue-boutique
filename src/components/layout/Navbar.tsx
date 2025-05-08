@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { 
@@ -20,9 +21,11 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import SearchDialog from "../SearchDialog";
 
 const Navbar = () => {
   const { totalItems } = useCart();
+  const { totalItems: wishlistItems } = useWishlist();
   const { user, logout, isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -45,11 +48,8 @@ const Navbar = () => {
             <Link to="/" className="font-medium text-gray-700 hover:text-luxury-purple transition-colors hover-underline">
               Home
             </Link>
-            <Link to="/collections/women" className="font-medium text-gray-700 hover:text-luxury-purple transition-colors hover-underline">
-              Women
-            </Link>
-            <Link to="/collections/men" className="font-medium text-gray-700 hover:text-luxury-purple transition-colors hover-underline">
-              Men
+            <Link to="/collections-showcase" className="font-medium text-gray-700 hover:text-luxury-purple transition-colors hover-underline">
+              Collections
             </Link>
             <Link to="/about" className="font-medium text-gray-700 hover:text-luxury-purple transition-colors hover-underline">
               About
@@ -59,14 +59,20 @@ const Navbar = () => {
           {/* Icons */}
           <div className="hidden md:flex items-center space-x-4">
             <button 
-              onClick={() => setIsSearchOpen(!isSearchOpen)} 
+              onClick={() => setIsSearchOpen(true)} 
               className="p-2 rounded-full hover:bg-gray-100"
+              aria-label="Search"
             >
               <Search className="h-5 w-5 text-gray-700" />
             </button>
             
             <Link to="/wishlist" className="p-2 rounded-full hover:bg-gray-100 relative">
               <Heart className="h-5 w-5 text-gray-700" />
+              {wishlistItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-luxury-purple text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {wishlistItems}
+                </span>
+              )}
             </Link>
             
             <Link to="/cart" className="p-2 rounded-full hover:bg-gray-100 relative">
@@ -125,27 +131,6 @@ const Navbar = () => {
             </button>
           </div>
         </div>
-
-        {/* Search bar */}
-        {isSearchOpen && (
-          <div className="py-4 border-t animate-fade-in">
-            <div className="relative max-w-3xl mx-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Search for products..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-luxury-purple focus:border-transparent"
-                autoFocus
-              />
-              <button 
-                onClick={() => setIsSearchOpen(false)} 
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Mobile menu */}
@@ -158,17 +143,11 @@ const Navbar = () => {
             >
               Home
             </Link>
-            <Link to="/collections/women" 
+            <Link to="/collections-showcase" 
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-luxury-purple hover:bg-gray-50"
               onClick={() => setIsMenuOpen(false)}
             >
-              Women
-            </Link>
-            <Link to="/collections/men" 
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-luxury-purple hover:bg-gray-50"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Men
+              Collections
             </Link>
             <Link to="/about" 
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-luxury-purple hover:bg-gray-50"
@@ -194,8 +173,19 @@ const Navbar = () => {
                   )}
                 </div>
                 <div className="ml-auto flex items-center space-x-4">
-                  <Link to="/wishlist" className="flex text-gray-400 hover:text-gray-600 focus:outline-none" onClick={() => setIsMenuOpen(false)}>
+                  <button onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsSearchOpen(true);
+                  }} className="flex text-gray-400 hover:text-gray-600 focus:outline-none">
+                    <Search className="h-6 w-6" />
+                  </button>
+                  <Link to="/wishlist" className="flex text-gray-400 hover:text-gray-600 focus:outline-none relative" onClick={() => setIsMenuOpen(false)}>
                     <Heart className="h-6 w-6" />
+                    {wishlistItems > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-luxury-purple text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {wishlistItems}
+                      </span>
+                    )}
                   </Link>
                   <Link to="/cart" className="relative flex text-gray-400 hover:text-gray-600 focus:outline-none" onClick={() => setIsMenuOpen(false)}>
                     <ShoppingCart className="h-6 w-6" />
@@ -236,6 +226,9 @@ const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Search Dialog */}
+      <SearchDialog open={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 };
