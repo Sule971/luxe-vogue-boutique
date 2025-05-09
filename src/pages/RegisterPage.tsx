@@ -8,10 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, RefreshCw } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrength";
 import Layout from "@/components/layout/Layout";
+import { registerUser } from "@/utils/api";
+import { toast } from "@/components/ui/sonner";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { register, checkPasswordStrength, generatePassword } = useAuth();
+  const { checkPasswordStrength, generatePassword } = useAuth();
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -51,10 +53,18 @@ const RegisterPage = () => {
     
     try {
       setIsLoading(true);
-      await register(name, email, password);
-      navigate("/");
-    } catch (error) {
-      setError("Failed to create an account. Please try again.");
+      // Use the registerUser function directly from API
+      await registerUser({
+        name,
+        email,
+        password,
+        phone: "" // Adding empty phone as it might be expected by the API
+      });
+      toast.success("Registration successful!");
+      navigate("/login");
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      setError(error.response?.data?.error || "Failed to create an account. Please try again.");
     } finally {
       setIsLoading(false);
     }
