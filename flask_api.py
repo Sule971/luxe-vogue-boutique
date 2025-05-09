@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 import pymysql
@@ -175,14 +174,20 @@ def get_user_orders(user_id):
     
     return jsonify({"orders": orders})
 
-# M-Pesa Payment API
+# M-Pesa Payment API - Updated to properly handle JSON request
 @app.route('/api/mpesa_payment', methods=['POST'])
 def mpesa_payment():
     if request.method == 'POST':
+        # Get JSON data from request
         data = request.get_json()
+        
         # Extract values sent
         amount = data.get('amount', '1')  # Default to 1 for testing
-        phone = data.get('phone')
+        phone = data.get('phone', '')
+        
+        # Clean phone number format
+        if phone.startswith('+'):
+            phone = phone[1:]  # Remove + if present
         
         if not phone:
             return jsonify({"error": "Phone number is required"}), 400
@@ -215,7 +220,7 @@ def mpesa_payment():
             "PartyA": phone,
             "PartyB": "174379",
             "PhoneNumber": phone,
-            "CallBackURL": "https://your-pythonanywhere-username.pythonanywhere.com/api/mpesa_callback",
+            "CallBackURL": "https://sule15971.pythonanywhere.com/api/mpesa_callback",
             "AccountReference": "Elegance Store",
             "TransactionDesc": "Payment for products"
         }

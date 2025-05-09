@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { processMpesaPayment } from "@/utils/api";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -32,23 +33,71 @@ const CheckoutPage = () => {
     mpesaNumber: "",
   });
   
+  const [isProcessing, setIsProcessing] = useState(false);
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const makeMpesaPayment = async () => {
+    try {
+      setIsProcessing(true);
+      
+      // Calculate total (including shipping cost of $15)
+      const subtotal = items.reduce((total, item) => total + item.product.price * item.quantity, 0);
+      const shippingCost = 15;
+      const total = subtotal + shippingCost;
+      
+      // Format the amount as string with no decimal places for M-Pesa
+      const amountStr = Math.round(total).toString();
+      
+      // Get phone number from form
+      let phoneNumber = formData.mpesaNumber.trim();
+      
+      // Call the API to initiate M-Pesa payment
+      const response = await processMpesaPayment({
+        phone: phoneNumber,
+        amount: amountStr
+      });
+      
+      toast.success("M-Pesa STK push sent! Check your phone to complete payment");
+      
+      // For demo purposes, proceed with order creation
+      // In production, you might want to wait for the callback confirmation
+      setTimeout(() => {
+        const orderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+        // Clear the cart
+        clearCart();
+        // Navigate to order confirmation
+        navigate(`/order-confirmation/${orderId}`);
+      }, 3000);
+      
+    } catch (error: any) {
+      console.error("M-Pesa payment error:", error);
+      toast.error(error.response?.data?.error || "Payment failed. Please check your phone number and try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // For demo purposes, simulate a successful order
-    toast.success("Order placed successfully! You'll receive a confirmation shortly.");
-    const orderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+    // Basic form validation
+    if (!formData.fullName || !formData.streetAddress || !formData.city) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
     
-    // Clear the cart
-    clearCart();
+    // Validate M-Pesa number
+    if (!formData.mpesaNumber || formData.mpesaNumber.length < 10) {
+      toast.error("Please enter a valid M-Pesa phone number");
+      return;
+    }
     
-    // Navigate to order confirmation
-    navigate(`/order-confirmation/${orderId}`);
+    // Process the payment
+    await makeMpesaPayment();
   };
 
   if (items.length === 0) {
@@ -165,11 +214,11 @@ const CheckoutPage = () => {
                             name="mpesaNumber"
                             value={formData.mpesaNumber}
                             onChange={handleChange}
-                            placeholder="+254..." 
+                            placeholder="2547XXXXXXXX or 07XXXXXXXX" 
                             required 
                           />
                           <p className="text-sm text-gray-500 mt-1">
-                            You will receive M-Pesa payment instructions after placing the order.
+                            Enter your M-Pesa registered phone number. Include country code (254) or start with 07.
                           </p>
                         </div>
                       </div>
@@ -209,8 +258,10 @@ const CheckoutPage = () => {
                     type="submit"
                     className="w-full bg-luxury-purple hover:bg-luxury-purple-light btn-hover-effect"
                     size="lg"
+                    disabled={isProcessing}
                   >
-                    Place Order <ChevronRight className="ml-1 h-4 w-4" />
+                    {isProcessing ? "Processing Payment..." : "Place Order"} 
+                    {!isProcessing && <ChevronRight className="ml-1 h-4 w-4" />}
                   </Button>
                 </div>
               </form>

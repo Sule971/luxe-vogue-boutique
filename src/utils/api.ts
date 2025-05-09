@@ -1,8 +1,7 @@
-
 import axios from 'axios';
 
-// Replace with your actual PythonAnywhere username
-const API_BASE_URL = "https://your-pythonanywhere-username.pythonanywhere.com/api";
+// Update with your actual PythonAnywhere username
+const API_BASE_URL = "https://sule15971.pythonanywhere.com/api";
 
 // User authentication
 export const registerUser = async (userData: any) => {
@@ -104,10 +103,22 @@ export const removeFromWishlist = async (userId: number, productId: number) => {
   }
 };
 
-// M-Pesa Payment
+// M-Pesa Payment - Updated to ensure correct parameter formatting
 export const processMpesaPayment = async (paymentData: { phone: string; amount: string }) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/mpesa_payment`, paymentData);
+    // Format phone number if needed (ensure it includes country code)
+    let formattedPhone = paymentData.phone;
+    if (formattedPhone.startsWith('0')) {
+      formattedPhone = '254' + formattedPhone.substring(1);
+    }
+    if (!formattedPhone.startsWith('+')) {
+      formattedPhone = '+' + formattedPhone;
+    }
+    
+    const response = await axios.post(`${API_BASE_URL}/mpesa_payment`, {
+      phone: formattedPhone,
+      amount: paymentData.amount
+    });
     return response.data;
   } catch (error) {
     console.error("Error processing M-Pesa payment:", error);
